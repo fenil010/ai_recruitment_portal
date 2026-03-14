@@ -29,8 +29,9 @@ export default function AiAssistantPage() {
   ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [candidates, setCandidates] = useState([]);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
   const chatScrollRef = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     if (!chatScrollRef.current) return;
@@ -52,21 +53,18 @@ export default function AiAssistantPage() {
     return { count, skills };
   }, [candidates]);
 
-  const sendMessage = async (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    const userMessage = { role: "user", content: input.trim() };
-    setMessages((m) => [...m, userMessage]);
+  const sendQuery = async (query) => {
+    if (!query.trim() || loading) return;
+    setMessages((m) => [...m, { role: "user", content: query.trim(), candidates: [] }]);
     setInput("");
     setLoading(true);
     try {
       const res = await fetch("/api/ai-search", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: userMessage.content }),
+        body: JSON.stringify({ query: query.trim() }),
       });
       const data = await res.json();
-      if (data.candidates) setCandidates(data.candidates);
       setMessages((m) => [
         ...m,
         { role: "assistant", content: data.reply || "Here are the matching candidates I found for you." },
@@ -75,8 +73,18 @@ export default function AiAssistantPage() {
       setMessages((m) => [...m, { role: "assistant", content: "I encountered an issue while searching. Please try again." }]);
     } finally {
       setLoading(false);
+      inputRef.current?.focus();
     }
   };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    sendQuery(input);
+  };
+
+  // Latest candidates from last assistant message
+  const latestCandidates =
+    [...messages].reverse().find((m) => m.role === "assistant" && m.candidates?.length > 0)?.candidates || [];
 
   return (
     <div className="space-y-8">
@@ -176,6 +184,7 @@ export default function AiAssistantPage() {
           <form onSubmit={sendMessage} className="space-y-3" suppressHydrationWarning>
             <div className="flex gap-3">
               <input
+                ref={inputRef}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder='Ask: "Find senior React developers in San Francisco"'

@@ -35,6 +35,7 @@ export default function UploadResumePage() {
   const [results, setResults] = useState([]);
   const [resultErrors, setResultErrors] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
+  const [dedupeResults, setDedupeResults] = useState([]);
 
   const acceptedLabel = useMemo(() => accept.join(", ").toUpperCase(), []);
 
@@ -77,8 +78,10 @@ export default function UploadResumePage() {
 
       const candidates = Array.isArray(data?.candidates) ? data.candidates : [];
       const errors = Array.isArray(data?.errors) ? data.errors : [];
+      const dedupe = Array.isArray(data?.dedupeResults) ? data.dedupeResults : [];
       setResults(candidates);
       setResultErrors(errors);
+      setDedupeResults(dedupe);
       if (candidates.length > 0) {
         setSuccessMessage(`Successfully uploaded ${candidates.length} resume${candidates.length > 1 ? "s" : ""}!`);
       }
@@ -254,6 +257,7 @@ export default function UploadResumePage() {
                 setResults([]);
                 setResultErrors([]);
                 setSuccessMessage("");
+                setDedupeResults([]);
               }}
               className="rounded-full border-2 border-white/20 text-white hover:border-white/40 transition-all px-6 py-4 font-semibold hover:bg-white/5"
             >

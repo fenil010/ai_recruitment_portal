@@ -117,7 +117,6 @@ export default function RecruiterDashboard() {
 
   useEffect(() => {
     fetchAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateFilter = (key, value) => {
